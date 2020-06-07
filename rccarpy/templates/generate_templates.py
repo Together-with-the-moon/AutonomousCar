@@ -37,7 +37,6 @@ def rotate(image):
 	print(rows, cols)
 	M = cv2.getRotationMatrix2D((cols / 2, rows / 2), deg, 2)
 	img_rot = cv2.warpAffine(image, M, (cols, rows))
-
 	return img_rot
 
 
