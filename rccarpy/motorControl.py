@@ -247,7 +247,6 @@ def setMotorControl(INA,INB,last_pwm,DutyCycle,situation):
         last_pwm.ChangeDutyCycle(DutyCycle)
         last_pwm = DutyCycle
 
-
 #==============================================================
 # motor control function
 # use Rapping for simplely code?
@@ -263,20 +262,21 @@ def setMotor(channel,pwm,DutyCycle,situation):
     else:
         setMotorControl(motor4IN1,motor4IN2,pwm,DutyCycle,situation)
 
-
-# motor control pin setting
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-pwm1 = setPinConfig(ENA, motor1IN1, motor1IN2)
-pwm2 = setPinConfig(ENB, motor2IN1, motor2IN2)
-pwm3 = setPinConfig(ENC, motor3IN1, motor3IN2)
-pwm4 = setPinConfig(END, motor4IN1, motor4IN2)
-terminatePoint= True
-
-# define import package 
-# if you import this codes, activate this code
 if __name__ == "__main__":
-
+    
+    # motor control pin setting
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    pwm1 = setPinConfig(ENA, motor1IN1, motor1IN2)
+    pwm2 = setPinConfig(ENB, motor2IN1, motor2IN2)
+    pwm3 = setPinConfig(ENC, motor3IN1, motor3IN2)
+    pwm4 = setPinConfig(END, motor4IN1, motor4IN2)
+    terminatePoint= True
+    
+    # define import package 
+    # if you import this codes, activate this code
+    
+    
     #Motor Control Main_method
     while(terminatePoint):
         operation_array_left,operation_array_left_right = isvaildPostion(error,operation_array)
@@ -324,7 +324,7 @@ if __name__ == "__main__":
         sleep(2)    
         terminatePoint = False      
         """
-#END
-GPIO.cleanup()
-sys.exit()
+    #END
+    GPIO.cleanup()
+    sys.exit()
 
