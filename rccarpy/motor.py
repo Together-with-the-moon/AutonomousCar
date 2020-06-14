@@ -73,16 +73,17 @@ Movement = 0
 # median Cycle: filtering of noise error
 #=======================================================================
 def check_Array(operation_array,resultArray):
-    """
-    print("1",operation_array)
-    print("2",resultArray)
-    """
+
+#     print("1",operation_array)
+#     print("2",resultArray)
+
     if(operation_array[0][0] == 0):
         operation_array = operation_array+resultArray
+        print(operation_array)
 #         print("init_array",operation_array)
     else:
         operation_array = np.concatenate((operation_array,resultArray),axis = 0)
-#         print("Concatenate array",operation_array)
+        print("Concatenate array",operation_array)
         
         #slilcing movement in the total array
         MovementArray = operation_array[0:,1:2]
@@ -91,7 +92,6 @@ def check_Array(operation_array,resultArray):
         length = MovementArray.shape[0] #maybe changed?
 #         print("length",length)
         mask = np.full((len(operation_array),1),MovementArray[0])
-        
 #        print("mask_setting",MovementArray[(mask== MovementArray)])
 #        print(len(MovementArray[(mask== MovementArray)]))
         
@@ -122,8 +122,8 @@ def medianOfduty(Duty_array):
 #=======================================================================
 def isvaildPostion(error,operation_array):
    global Movement
-   global DutyCycle1
-   global DutyCycle2
+   DutyCycle1 = 0
+   DutyCycle2 = 0
    
    # Define of RC Car Forward opreation     
    if error == 0:
@@ -178,6 +178,7 @@ def isvaildPostion(error,operation_array):
    if operation_array.shape[0] > 12 :
        operation_array = np.delete(operation_array,[0,1], axis = 0)
    
+   
  # copy of Rear of motor operation 
    operation_array_copy = copyArray(operation_array)
    
@@ -187,7 +188,7 @@ def isvaildPostion(error,operation_array):
     print("copy array_output")
     print(operation_array_copy)
    """
-   return operation_array,operation_array_copy       
+   return operation_array#,operation_array_copy       
 
 # setting motor control pin in the Rc Car
 # control PWM 100Khz JMOD-motordriver is okay!
@@ -247,6 +248,7 @@ def setMotorControl(INA,INB,last_pwm,DutyCycle,situation):
         last_pwm.ChangeDutyCycle(DutyCycle)
         last_pwm = DutyCycle
 
+
 #==============================================================
 # motor control function
 # use Rapping for simplely code?
@@ -263,7 +265,6 @@ def setMotor(channel,pwm,DutyCycle,situation):
         setMotorControl(motor4IN1,motor4IN2,pwm,DutyCycle,situation)
 
 if __name__ == "__main__":
-    
     # motor control pin setting
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
@@ -279,7 +280,7 @@ if __name__ == "__main__":
     
     #Motor Control Main_method
     while(terminatePoint):
-        operation_array_left,operation_array_left_right = isvaildPostion(error,operation_array)
+        op9Postion(error,operation_array)
     #        print(error_i)
         """
         print("Parameter setting")
@@ -324,7 +325,6 @@ if __name__ == "__main__":
         sleep(2)    
         terminatePoint = False      
         """
-    #END
-    GPIO.cleanup()
-    sys.exit()
-
+        #END
+        GPIO.cleanup()
+        sys.exit()
