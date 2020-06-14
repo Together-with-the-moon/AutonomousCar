@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from stopsign_detection.stopsign import detect_stopSign
 
 WIDTH = 400
 HEIGHT = 240
@@ -99,3 +100,5 @@ def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
     
     Result = laneCenter - frameCenter
     return Result
+
+def StopDetection():
