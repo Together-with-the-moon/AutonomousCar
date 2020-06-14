@@ -34,41 +34,37 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         print("Stop Sign")
         dist_Stop = 0
         # send a stop signal
+        setMotor(LeftMotor_front,pwm1,100,dist_Stop)
+        sleep(0.003)
+        setMotor(RightMotor_front,pwm2,100,dist_Stop)
+        sleep(0.01)
         
     #Motor Control Main_method
-    #operation_array_left,operation_array_left_right = isvaildPostion(Result,operation_array)
-    #operation_array = isvaildPostion(Result,operation_array)
-    operation_array = isvaildPostion(Result,operation_array)
-    length = len(operation_array)
+    operation_array_left,operation_array_left_right = isvaildPostion(Result,operation_array_left)
+    length = len(operation_array_left)
         
-    #Parmeter setting
-    """
+    #prameter setting
     LeftMotor_front = operation_array_left[length-2:length-1,0:1][0][0]
-    RightMotor_front = operation_array_left[length-1:length,0:1][0][0]
-    LeftMotor_rear = operation_array_left_right[length-2:length-1,0:1][0][0]
+    LeftMotor_rear = operation_array_left[length-1:length,0:1][0][0]
+    RightMotor_front = operation_array_left_right[length-2:length-1,0:1][0][0]
     RightMotor_rear = operation_array_left_right[length-1:length,0:1][0][0]
-    DutyCycle1 = operation_array_left[length-2:length-1,1:2][0][0]
-    DutyCycle2 = operation_array_left[length-1:length,1:2][0][0]
-    Movement1 = operation_array_left[length-2:length-1,2:3][0][0]
-    Movement2 = operation_array_left[length-1:length-0,2:3][0][0]
-    """
-    LeftMotor_front = operation_array[length-2:length-1,0:1][0][0]
-    RightMotor_front = operation_array[length-1:length,0:1][0][0]
-    DutyCycle1 = operation_array[length-2:length-1,1:2][0][0]
-    DutyCycle2 = operation_array[length-1:length,1:2][0][0]
-    Movement1 = operation_array[length-2:length-1,2:3][0][0]
+    DutyCycle1 = operation_array_left[0:1,2:3][0][0]
+    DutyCycle2 = operation_array_left[1:2,2:3][0][0]
+    Movement1 = operation_array_left[0:1,1:2][0][0]
+    Movement2 = operation_array_left[1:2,1:2][0][0]
      
-    
     setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement)
     sleep(0.003)
     setMotor(RightMotor_front,pwm2,DutyCycle2,Movement)
     sleep(0.01)
-    """
-    setMotor(LeftMotor_rear,pwm3,DutyCycle1,Movement)
-    sleep(0.002)
-    setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement)
-    sleep(0.002)
-    """
+    
+    print(Movement1)
+    print(LeftMotor_front,DutyCycle1,Movement1)
+    setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement1)
+    setMotor(LeftMotor_rear,pwm2,DutyCycle2,Movement2)
+    setMotor(RightMotor_front,pwm3,DutyCycle1,Movement1)
+    setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement2)
+    sleep(2)
 
     ResList = [Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
     DirList = ["Forward", "Right1", "Right2", "Right3", "Left1", "Left2", "Left3"]
@@ -87,16 +83,5 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     rawCapture.truncate(0)
     if key == ord("q"):
         break
-    """
-    print("motor control")
- 
-    
-        print("LeftMotor_front:",LeftMotor_front)
-        print("RightMotor_front:",RightMotor_front)
-        print("LeftMotor_rear:",LeftMotor_rear)
-        print("RightMotor_rear:",RightMotor_rear)
-        print("LeftMovement:",Movement)
-        print("RightMovement:",Movement)
-   """
   
 GPIO.cleanup()
