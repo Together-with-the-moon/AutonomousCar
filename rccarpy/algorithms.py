@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from stopsign_detection.stopsign import detect_stopSign
 
 WIDTH = 400
 HEIGHT = 240
@@ -65,7 +64,7 @@ def Threshold(imgPers):
     imgFinalDuplicate1 = cv2.cvtColor(imgFinal, cv2.COLOR_RGB2BGR)
     return imgFinal, imgFinalDuplicate, imgFinalDuplicate1
 
-def Histogram(imgFinalDuplicate):
+def Histogram(imgFinalDuplicate, imgFinalDuplicate1):
     histogramLane = np.uint8([])
     
     for i in range(WIDTH):
@@ -76,7 +75,18 @@ def Histogram(imgFinalDuplicate):
         ROILane = cv2.divide(ROILane, 255)
         # summation of white pixels: append the number of white pixels in ROILane to hisogramLane  
         histogramLane = np.append(histogramLane, ROILane.sum(axis=0)[0:1].astype(np.uint8), axis=0)
-    return histogramLane
+
+    for i in range(WIDTH):
+        # ROILane = cv2.rectangle(imgFinalDuplicate,(i,140),(i+1,240),(0,0,255),3)
+        # Matrix: rows 100, cols 1 
+        ROILaneEnd= imgFinalDuplicate1[:HEIGHT, i]
+        # scaling (0 ~ 255) to (0 ~ 1)
+        ROILaneEnd = cv2.divide(ROILaneEnd, 255)
+        # summation of white pixels: append the number of white pixels in ROILane to hisogramLane  
+        histogramLaneEnd = np.append(histogramLaneEnd, ROILaneEnd.sum(axis=0)[0:1].astype(np.uint8), axis=0)
+    laneEnd = histogramLaneEnd.sum(axis=0)
+    print(f"Lane END = {laneEnd}")  
+    return histogramLane, laneEnd
 
 def LaneFinder(imgFinal, histogramLane):
     # find the position of left edge of left lane
@@ -100,5 +110,3 @@ def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
     
     Result = laneCenter - frameCenter
     return Result
-
-def StopDetection():
