@@ -46,9 +46,11 @@ motor3IN2 = 10
 motor4IN1 = 22
 motor4IN2 = 27
 
-#Output PIN settings
+#Configuration Settings
 HIGH = 1       # enable
 LOW = 0        # disenable
+OUTPUT = 1
+INPUT = 0
 
 #import other codes
 #==============================================================
@@ -197,14 +199,13 @@ def setPinConfig(ENable,INA,INB):
     GPIO.setup(INA,GPIO.OUT)
     GPIO.setup(INB,GPIO.OUT)
     currentPWM = 0
-    pwm = GPIO.PWM(INB,100)
+    pwm = GPIO.PWM(ENable,100)
     pwm.start(currentPWM)
     return pwm
 
 def movingRCcar(INA,INB): # this operation is same(Forward, Right, Left)
     GPIO.output(INA,HIGH)
     GPIO.output(INB,LOW)
-
 
 def setMotorControl(INA,INB,last_pwm,DutyCycle,situation):
     #global PWM_Changeable    #revised1
@@ -247,7 +248,6 @@ def setMotorControl(INA,INB,last_pwm,DutyCycle,situation):
     if PWM_Changeable == True:
         last_pwm.ChangeDutyCycle(DutyCycle)
         last_pwm = DutyCycle
-
 
 #==============================================================
 # motor control function
