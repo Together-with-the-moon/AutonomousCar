@@ -98,9 +98,13 @@ def check_Array(operation_array,resultArray):
 #        print(len(MovementArray[(mask== MovementArray)]))
         
         if length == len(MovementArray[(mask== MovementArray)]):
-            dutycycle = medianOfduty(operation_array[0:,2:3])
-            operation_array[0:2,length-1:length] = dutycycle
-#     print("return",operation_array)
+            dutycycle1 = medianOfduty(operation_array[0::2,2:3])
+            dutycycle2 = medianOfduty(operation_array[1::2,2:3])
+            print("d",dutycycle1, dutycycle2)
+            operation_array[length-2:length-1, 2:3] = dutycycle1
+            operation_array[length-1:length, 2:3] = dutycycle2
+            print(operation_array[length-2:length-1, 2:3], operation_array[length-1:length, 2:3])
+            #     print("return",operation_array)
     
     return operation_array
 

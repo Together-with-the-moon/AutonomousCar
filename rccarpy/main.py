@@ -28,16 +28,16 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     histogramLane = Histogram(imgFinalDuplicate)
     LeftLanePos, RightLanePos = LaneFinder(imgFinal, histogramLane)
     Result = LaneCenter(imgFinal, LeftLanePos, RightLanePos)
-    dist_Stop, image = detect_stopSign(image)
+#     dist_Stop, image = detect_stopSign(image)
 
-    if 5 < dist_Stop < 20:
-        print("Stop Sign")
-        dist_Stop = 0
-        # send a stop signal
-        setMotor(LeftMotor_front,pwm1,100,dist_Stop)
-        sleep(0.003)
-        setMotor(RightMotor_front,pwm2,100,dist_Stop)
-        sleep(0.01)
+#     if 5 < dist_Stop < 20:
+#         print("Stop Sign")
+#         dist_Stop = 0
+#         # send a stop signal
+#         setMotor(LeftMotor_front,pwm1,100,dist_Stop)
+#         sleep(0.003)
+#         setMotor(RightMotor_front,pwm2,100,dist_Stop)
+#         sleep(0.01)
         
     #Motor Control Main_method
     operation_array_left,operation_array_left_right = isvaildPostion(Result,operation_array_left)

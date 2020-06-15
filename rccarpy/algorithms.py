@@ -100,5 +100,3 @@ def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
     
     Result = laneCenter - frameCenter
     return Result
-
-def StopDetection():
