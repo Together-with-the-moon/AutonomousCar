@@ -46,9 +46,11 @@ motor3IN2 = 10
 motor4IN1 = 22
 motor4IN2 = 27
 
-#Output PIN settings
+#Configuration Settings
 HIGH = 1       # enable
 LOW = 0        # disenable
+OUTPUT = 1
+INPUT = 0
 
 #import other codes
 #==============================================================
@@ -63,7 +65,7 @@ error = np.array([0,15,40,-15,-40,-40,-40,-40,-40,-40,-40,15,-40,0])
 
 
 # sinit operation arrays
-operation_array = np.zeros((1,3), dtype =int)
+operation_array_left = np.zeros((1,3), dtype =int)
 Movement = 0
 
 #=======================================================================
@@ -80,7 +82,7 @@ def check_Array(operation_array,resultArray):
     if(operation_array[0][0] == 0):
         operation_array = operation_array+resultArray
         print(operation_array)
-#         print("init_array",operation_array)
+        print("init_array",operation_array)
     else:
         operation_array = np.concatenate((operation_array,resultArray),axis = 0)
         print("Concatenate array",operation_array)
@@ -94,10 +96,14 @@ def check_Array(operation_array,resultArray):
         mask = np.full((len(operation_array),1),MovementArray[0])
 #        print("mask_setting",MovementArray[(mask== MovementArray)])
 #        print(len(MovementArray[(mask== MovementArray)]))
-        
+        print(length, len(MovementArray[(mask== MovementArray)]))
         if length == len(MovementArray[(mask== MovementArray)]):
-            dutycycle = medianOfduty(operation_array[0:,2:3])
-            operation_array[0:2,length-1:length] = dutycycle
+            dutycycle1 = medianOfduty(operation_array[0::2,2:3])
+            dutycycle2 = medianOfduty(operation_array[1::2,2:3])
+            print("d",dutycycle1, dutycycle2)
+            operation_array[length-2:length-1, 2:3] = dutycycle1
+            operation_array[length-1:length, 2:3] = dutycycle2
+            print(operation_array[length-2:length-1, 2:3], operation_array[length-1:length, 2:3])
 #     print("return",operation_array)
     
     return operation_array
@@ -129,66 +135,71 @@ def isvaildPostion(error,operation_array):
    if error == 0:
        print("forward setting")
        Movement = Forward
-       DutyCycle1 = 100
-       DutyCycle2 = 100
+       DutyCycle1 = 50
+       DutyCycle2 = 50
        
    # Define of RC Car Right opreation (mirco moving)
    elif (error > 0 and error <= 15):
-       print("Right setting")
+       print("Right very small operation")
        Movement = Right
-       DutyCycle1 = 30
-       DutyCycle2 = 0
+       DutyCycle1 = 40
+       DutyCycle2 = 10
        
    # Define of RC Car Right opreation (normal moving)
    elif (error >15  and error <= 30):
+       print("Right small operation")
        Movement = Right
        DutyCycle1 = 50
-       DutyCycle2 = 0
+       DutyCycle2 = 10
    
    # Define of RC Car Right opreation (large moving) 
    elif (error >30):
+        print("Right big operation")
         Movement = Right
-        DutyCycle1 = 70 
+        DutyCycle1 = 50
         DutyCycle2 = 0
    
    # Define of RC Car Left opreation (mirco moving) 
    elif (error < 0 and error > -15):
+        print("Left very small operation")
         Movement = Left
-        DutyCycle1 = 0
-        DutyCycle2 = 30
+        DutyCycle1 = 10
+        DutyCycle2 = 40
         
    # Define of RC Car Left opreation (normal moving)      
    elif (error >15  and error <= 30):
+        print("Left small operation")
         Movement = Left
-        DutyCycle1 = 0
+        DutyCycle1 = 10
         DutyCycle2 = 50
    
    # Define of RC Car Left opreation (Large moving)  
    elif (error <-30):
+        print("Left big operation")
         Movement = Left
         DutyCycle1 = 0
-        DutyCycle2 = 70
+        DutyCycle2 = 50
         
         
    resultArray = np.array([MOTOR1,Movement,DutyCycle1,MOTOR2,Movement,DutyCycle2]).reshape(2,3)
-#    print(resultArray)
+   print("resultArray",resultArray)
    operation_array = check_Array(operation_array,resultArray)
   
    # Delete old operation samples 
    if operation_array.shape[0] > 12 :
        operation_array = np.delete(operation_array,[0,1], axis = 0)
-   
+       print("a", operation_array)
    
  # copy of Rear of motor operation 
    operation_array_copy = copyArray(operation_array)
    
-   """
-    print("operation array_output")
-    print(operation_array)
-    print("copy array_output")
-    print(operation_array_copy)
-   """
-   return operation_array#,operation_array_copy       
+
+   print("operation array_output")
+   print(operation_array)
+   print("copy array_output")
+   print(operation_array_copy)
+
+   return operation_array ,operation_array_copy       
 
 # setting motor control pin in the Rc Car
 # control PWM 100Khz JMOD-motordriver is okay!
@@ -197,7 +208,7 @@ def setPinConfig(ENable,INA,INB):
     GPIO.setup(INA,GPIO.OUT)
     GPIO.setup(INB,GPIO.OUT)
     currentPWM = 0
-    pwm = GPIO.PWM(INB,100)
+    pwm = GPIO.PWM(ENable,100)
     pwm.start(currentPWM)
     return pwm
 
@@ -280,25 +291,19 @@ if __name__ == "__main__":
     
     #Motor Control Main_method
     while(terminatePoint):
-        op9Postion(error,operation_array)
-    #        print(error_i)
-        """
+        operation_array_left,operation_array_left_right = isvaildPostion(error_i,operation_array_left)
         print("Parameter setting")
-        print("motor move duty")
-    #        print(operation_array_left)     
-           #prameter setting
-        """
+        # sprint(operation_array_left)
+
         length = len(operation_array_left)
-        
         LeftMotor_front = operation_array_left[length-2:length-1,0:1][0][0]
-        RightMotor_front = operation_array_left[length-1:length,0:1][0][0]
-        LeftMotor_rear = operation_array_left_right[length-2:length-1,0:1][0][0]
+        LeftMotor_rear = operation_array_left[length-1:length,0:1][0][0]
+        RightMotor_front = operation_array_left_right[length-2:length-1,0:1][0][0]
         RightMotor_rear = operation_array_left_right[length-1:length,0:1][0][0]
-        DutyCycle1 = operation_array_left[length-2:length-1,1:2][0][0]
-        DutyCycle2 = operation_array_left[length-1:length,1:2][0][0]
+        DutyCycle1 = operation_array_left[0:1,2:3][0][0]
+        DutyCycle2 = operation_array_left[1:2,2:3][0][0]
         Movement1 = operation_array_left[length-2:length-1,2:3][0][0]
         Movement2 = operation_array_left[length-1:length-0,2:3][0][0]
-        
         """
         print("LeftMotor_front:",LeftMotor_front)
         print("RightMotor_front:",RightMotor_front)
@@ -307,24 +312,20 @@ if __name__ == "__main__":
         print("LeftMovement:",Movement)
         print("RightMovement:",Movement)
         """
-        
         setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement)
-        sleep(0.003)
-        setMotor(RightMotor_front,pwm2,DutyCycle2,Movement)
-        sleep(0.00)
-        setMotor(LeftMotor_rear,pwm3,DutyCycle1,Movement)
-        sleep(0.002)
+        setMotor(LeftMotor_rear,pwm2,DutyCycle2,Movement) 
+        setMotor(RightMotor_front,pwm3,DutyCycle1,Movement)
         setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement)
-        sleep(0.002) 
-        
-        """
+        sleep(2) 
+
         #STOP
+        """
         print("Stop init")
         setMotor(MOTOR1,pwm1,80,Stop)
         setMotor(MOTOR2,pwm2,80,Stop)
-        sleep(2)    
-        terminatePoint = False      
+        sleep(2)
         """
+        terminatePoint = False      
         #END
         GPIO.cleanup()
         sys.exit()
