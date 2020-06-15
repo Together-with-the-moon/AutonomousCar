@@ -11,6 +11,6 @@ def detect_stopSign(image):
 	        cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,255),2)
 	        roi_gray = gray[y:y+h, x:x+w]
 	        roi_color = image[y:y+h, x:x+w]
-		cv2.putText(image, 'stopSign', (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (36,255,12), 2)
+		cv2.putText(image, 'stopSign', (x, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 165, 0), 2)
 
 	return image
