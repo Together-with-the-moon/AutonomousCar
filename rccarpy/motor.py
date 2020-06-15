@@ -65,7 +65,7 @@ error = np.array([0,15,40,-15,-40,-40,-40,-40,-40,-40,-40,15,-40,0])
 
 
 # sinit operation arrays
-operation_array = np.zeros((1,3), dtype =int)
+operation_array_left = np.zeros((1,3), dtype =int)
 Movement = 0
 
 #=======================================================================
@@ -190,7 +190,7 @@ def isvaildPostion(error,operation_array):
     print("copy array_output")
     print(operation_array_copy)
    """
-   return operation_array#,operation_array_copy       
+   return operation_array, operation_array_copy       
 
 # setting motor control pin in the Rc Car
 # control PWM 100Khz JMOD-motordriver is okay!
@@ -280,42 +280,32 @@ if __name__ == "__main__":
     
     #Motor Control Main_method
     while(terminatePoint):
-        op9Postion(error,operation_array)
-    #        print(error_i)
-        """
-        print("Parameter setting")
-        print("motor move duty")
-    #        print(operation_array_left)     
-           #prameter setting
-        """
+        #Motor Control Main_method
+        operation_array_left,operation_array_left_right = isvaildPostion(error,operation_array_left)
         length = len(operation_array_left)
-        
+            
+        #prameter setting
         LeftMotor_front = operation_array_left[length-2:length-1,0:1][0][0]
-        RightMotor_front = operation_array_left[length-1:length,0:1][0][0]
-        LeftMotor_rear = operation_array_left_right[length-2:length-1,0:1][0][0]
+        LeftMotor_rear = operation_array_left[length-1:length,0:1][0][0]
+        RightMotor_front = operation_array_left_right[length-2:length-1,0:1][0][0]
         RightMotor_rear = operation_array_left_right[length-1:length,0:1][0][0]
-        DutyCycle1 = operation_array_left[length-2:length-1,1:2][0][0]
-        DutyCycle2 = operation_array_left[length-1:length,1:2][0][0]
-        Movement1 = operation_array_left[length-2:length-1,2:3][0][0]
-        Movement2 = operation_array_left[length-1:length-0,2:3][0][0]
-        
-        """
-        print("LeftMotor_front:",LeftMotor_front)
-        print("RightMotor_front:",RightMotor_front)
-        print("LeftMotor_rear:",LeftMotor_rear)
-        print("RightMotor_rear:",RightMotor_rear)
-        print("LeftMovement:",Movement)
-        print("RightMovement:",Movement)
-        """
-        
+        DutyCycle1 = operation_array_left[0:1,2:3][0][0]
+        DutyCycle2 = operation_array_left[1:2,2:3][0][0]
+        Movement1 = operation_array_left[0:1,1:2][0][0]
+        Movement2 = operation_array_left[1:2,1:2][0][0]
+         
         setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement)
         sleep(0.003)
         setMotor(RightMotor_front,pwm2,DutyCycle2,Movement)
-        sleep(0.00)
-        setMotor(LeftMotor_rear,pwm3,DutyCycle1,Movement)
-        sleep(0.002)
-        setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement)
-        sleep(0.002) 
+        sleep(0.01)
+        
+        print(Movement1)
+        print(LeftMotor_front,DutyCycle1,Movement1)
+        setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement1)
+        setMotor(LeftMotor_rear,pwm2,DutyCycle2,Movement2)
+        setMotor(RightMotor_front,pwm3,DutyCycle1,Movement1)
+        setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement2)
+        sleep(2)
         
         """
         #STOP
