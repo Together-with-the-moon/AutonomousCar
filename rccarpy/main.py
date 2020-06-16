@@ -25,7 +25,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     image = frame.array
     imgPers = Perspective(image, pts1)
     imgFinal, imgFinalDuplicate, imgFinalDuplicate1 = Threshold(imgPers)
-    histogramLane = Histogram(imgFinalDuplicate)
+    histogramLane, laneEnd = Histogram(imgFinalDuplicate, imgFinalDuplicate1)
     LeftLanePos, RightLanePos = LaneFinder(imgFinal, histogramLane)
     Result = LaneCenter(imgFinal, LeftLanePos, RightLanePos)
 #     dist_Stop, image = detect_stopSign(image)
@@ -38,6 +38,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 #         sleep(0.003)
 #         setMotor(RightMotor_front,pwm2,100,dist_Stop)
 #         sleep(0.01)
+
+    if laneEnd > 15000:
+        print("Lane End")
+        # send a temporal stop signal
         
     #Motor Control Main_method
     operation_array_left,operation_array_left_right = isvaildPostion(Result,operation_array_left)
@@ -66,11 +70,16 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement2)
     sleep(2)
 
-    ResList = [Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
-    DirList = ["Forward", "Right1", "Right2", "Right3", "Left1", "Left2", "Left3"]
+    ResList = [laneEnd>15000, Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
+    DirList = ["Lane End", "Forward", "Right1", "Right2", "Right3", "Left1", "Left2", "Left3"]
     
     for Res, Dir in zip(ResList, DirList):
-        if Res:
+        if ResList[0]:
+            print(Dir)
+            ss = "Lane End"
+            cv2.putText(frame, ss, (1,50), 0, 1, color=(255,0,0), thickness=2)
+            break
+        elif Res:
             print(Dir)
             ss = f"Result = {Result} Move {Dir}"
             cv2.putText(image, ss, (1,50), 0, 1, color=(0,0,255), thickness=2)
