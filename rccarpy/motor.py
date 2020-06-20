@@ -1,8 +1,31 @@
 import RPi.GPIO as GPIO
-from time import sleep
+import time
 import sys
 import copy
 import numpy as np
+
+
+# motor encoder pin
+"""
+# interrupt_PIN define
+interrupt_Flag = 26
+
+#EncoderMotor_Pin define
+MOTOR1encoPinA = 21
+MOTOR1encoPinB = 20
+
+MOTOR2encoPinA = 16
+MOTOR2encoPinB = 12
+
+MOTOR3encoPinA = 1
+MOTOR3encoPinB = 7
+
+MOTOR4encoPinA = 8
+MOTOR4encoPinB = 25
+
+#encoder Position init
+encoderPos = 0
+"""
 
 #=====================================================================
 # using JMOD-Motor-Drive
@@ -12,8 +35,6 @@ import numpy as np
 # define Motor LIST
 MOTOR1 = 1
 MOTOR2 = 2
-MOTOR3 = 3
-MOTOR4 = 4
 
 #Situationa LIST
 Stop =0
@@ -24,27 +45,18 @@ Right = 4
 Break = 5
 
 #PWM PIN LIST : using motor speed pin (pwm pin -> dutycycle -> motor speed)
+
 ENA = 26
 ENB = 0
-ENC = 12
-END = 18
 
 #GPIO PIN
-#motor1 : Front Left Motor (Stearing and moving)
+#Left Motors
 motor1IN1 = 19
 motor1IN2 = 13
 
-#motor2: Rear Right Motor  (it is only Moving)
+#Right Motors
 motor2IN1 = 6
 motor2IN2 = 5
-
-#motor3: Front Left Motor  (Stearing and moving)
-motor3IN1 = 9
-motor3IN2 = 10
-
-#Motor4: Rear Rihgt Motor  (it is only Moving)
-motor4IN1 = 22
-motor4IN2 = 27
 
 #Configuration Settings
 HIGH = 1       # enable
@@ -52,21 +64,76 @@ LOW = 0        # disenable
 OUTPUT = 1
 INPUT = 0
 
-#import other codes
-#==============================================================
-#operation_array = np.empty((12,3), dtype =int)
-#error_data = np.empty((6,1),dtype = int)
-#=======================================================================
-
-#test data
-error = np.array([0,15,40,-15,-40,-40,-40,-40,-40,-40,-40,15,-40,0])
-#error = np.array([0,15,40,-15,-40])
-#print(error)
-
-
 # sinit operation arrays
 operation_array_left = np.zeros((1,3), dtype =int)
 Movement = 0
+
+#=================================================================
+# Encoder motor function 
+#=================================================================
+"""
+def setEncoderConfig(encINA, encINB):
+    GPIO.setup(MOTOR1encoPinA, IO.IN, pull_up_down=IO.PUD_UP)
+    GPIO.setup(MOTOR1encoPinB, IO.IN, pull_up_down=IO.PUD_UP)
+    
+    GPIO.setup(MOTOR2encoPinA, IO.IN, pull_up_down=IO.PUD_UP)
+    GPIO.setup(MOTOR2encoPinB, IO.IN, pull_up_down=IO.PUD_UP)
+    
+    GPIO.setup(MOTOR3encoPinA, IO.IN, pull_up_down=IO.PUD_UP)
+    GPIO.setup(MOTOR3encoPinB, IO.IN, pull_up_down=IO.PUD_UP)
+    
+    GPIO.setup(MOTOR4encoPinA, IO.IN, pull_up_down=IO.PUD_UP)
+    GPIO.setup(MOTOR4encoPinB, IO.IN, pull_up_down=IO.PUD_UP)
+    
+def encoderA(channel):
+    global encoderPos
+    if IO.input(encPinA) == IO.input(encPinB):
+        encoderPos += 1
+    else:
+        encoderPos -= 1
+
+def encoderB(channel):
+    global encoderPos
+    if IO.input(encPinA) == IO.input(encPinB):
+        encoderPos -= 1
+    else:
+        encoderPos += 1
+
+def setInterruptConfig():
+    GPIO.setup(interrupt_Flag,GPIO.IN,pull_up_down=GPIO.PUD_UP) 
+"""
+
+def dutyCycle_adjust(radius):
+    global DutyCycle1
+    global DutyCycle2
+    if -3.6<= radius and radius <=3.6 :
+        DutyCycle1 = 41
+        DutyCycle2 = 35
+        
+    elif 3.6<radius and radius<=  4.6:
+        DutyCycle1 = 41
+        DutyCycle2 = 20
+        
+    elif 4.6<radius and radius<=  6.5:
+        DutyCycle1 = 41
+        DutyCycle2 = 15
+        
+    elif 6.5< radius:
+        DutyCycle1 = 41
+        DutyCycle2 = 10  
+        
+    elif -3.6>radius and radius >=-4.6 :
+        DutyCycle1 = 20
+        DutyCycle2 = 41
+        
+    elif -6.5<radius and radius >= -4.6:
+        DutyCycle1 = 15
+        DutyCycle2 = 41
+        
+    elif radius <= -6.5:
+        DutyCycle1 = 10
+        DutyCycle2 = 41
+    return DutyCycle1,DutyCycle2
 
 #=======================================================================
 # filtering of dutycycle it is fit for RC car speed
@@ -81,11 +148,11 @@ def check_Array(operation_array,resultArray):
 
     if(operation_array[0][0] == 0):
         operation_array = operation_array+resultArray
-        print(operation_array)
+        #print(operation_array)
 #         print("init_array",operation_array)
     else:
         operation_array = np.concatenate((operation_array,resultArray),axis = 0)
-        print("Concatenate array",operation_array)
+        #print("Concatenate array",operation_array)
         
         #slilcing movement in the total array
         MovementArray = operation_array[0:,1:2]
@@ -108,14 +175,6 @@ def check_Array(operation_array,resultArray):
     
     return operation_array
 
-#this function is very fool I will be change it
-def copyArray(operation_array):
-    #define motor3 and motor4 control parallel
-    operation_array_copy = copy.deepcopy(operation_array)
-    operation_array_copy[0::2,0:1] =MOTOR3
-    operation_array_copy[1::2,0:1] =MOTOR4    
-    return operation_array_copy
-
 # filtering to nose and return median of ducy cycle 
 def medianOfduty(Duty_array):
     return np.median(Duty_array)
@@ -132,48 +191,48 @@ def isvaildPostion(error,operation_array):
    DutyCycle2 = 0
    
    # Define of RC Car Forward opreation     
-   if error == 0:
+   if error <5 and error >-5:
        print("forward setting")
        Movement = Forward
-       DutyCycle1 = 100
-       DutyCycle2 = 100
+       DutyCycle1 = 41
+       DutyCycle2 = 35
        
    # Define of RC Car Right opreation (mirco moving)
-   elif (error > 0 and error <= 15):
+   elif (error > 5 and error <= 15):
        print("Right setting")
        Movement = Right
-       DutyCycle1 = 30
-       DutyCycle2 = 0
+       DutyCycle1 = 41
+       DutyCycle2 = 30
        
    # Define of RC Car Right opreation (normal moving)
    elif (error >15  and error <= 30):
        Movement = Right
-       DutyCycle1 = 50
-       DutyCycle2 = 0
+       DutyCycle1 = 41
+       DutyCycle2 = 20
    
    # Define of RC Car Right opreation (large moving) 
    elif (error >30):
         Movement = Right
-        DutyCycle1 = 70 
-        DutyCycle2 = 0
+        DutyCycle1 = 41 
+        DutyCycle2 = 15
    
    # Define of RC Car Left opreation (mirco moving) 
-   elif (error < 0 and error > -15):
+   elif (error < -5 and error > -15):
         Movement = Left
-        DutyCycle1 = 0
-        DutyCycle2 = 30
+        DutyCycle1 = 30
+        DutyCycle2 = 41
         
    # Define of RC Car Left opreation (normal moving)      
    elif (error >15  and error <= 30):
         Movement = Left
-        DutyCycle1 = 0
-        DutyCycle2 = 50
+        DutyCycle1 = 20
+        DutyCycle2 = 41
    
    # Define of RC Car Left opreation (Large moving)  
    elif (error <-30):
         Movement = Left
-        DutyCycle1 = 0
-        DutyCycle2 = 70
+        DutyCycle1 = 15
+        DutyCycle2 = 41
         
         
    resultArray = np.array([MOTOR1,Movement,DutyCycle1,MOTOR2,Movement,DutyCycle2]).reshape(2,3)
@@ -185,16 +244,13 @@ def isvaildPostion(error,operation_array):
        operation_array = np.delete(operation_array,[0,1], axis = 0)
    
    
- # copy of Rear of motor operation 
-   operation_array_copy = copyArray(operation_array)
-   
    """
     print("operation array_output")
     print(operation_array)
     print("copy array_output")
     print(operation_array_copy)
    """
-   return operation_array, operation_array_copy       
+   return operation_array       
 
 # setting motor control pin in the Rc Car
 # control PWM 100Khz JMOD-motordriver is okay!
@@ -259,66 +315,54 @@ def setMotorControl(INA,INB,last_pwm,DutyCycle,situation):
 #=======================================================================
 def setMotor(channel,pwm,DutyCycle,situation):
     #print("setMotor prameter",channel,pwm,DutyCycle,situation)
+    
     if channel == MOTOR1:
         setMotorControl(motor1IN1,motor1IN2,pwm,DutyCycle,situation)
     elif channel == MOTOR2:
         setMotorControl(motor2IN1,motor2IN2,pwm,DutyCycle,situation)
-    elif channel == MOTOR3:
-        setMotorControl(motor3IN1,motor3IN2,pwm,DutyCycle,situation)
-    else:
-        setMotorControl(motor4IN1,motor4IN2,pwm,DutyCycle,situation)
 
-if __name__ == "__main__":
-    # motor control pin setting
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setwarnings(False)
-    pwm1 = setPinConfig(ENA, motor1IN1, motor1IN2)
-    pwm2 = setPinConfig(ENB, motor2IN1, motor2IN2)
-    pwm3 = setPinConfig(ENC, motor3IN1, motor3IN2)
-    pwm4 = setPinConfig(END, motor4IN1, motor4IN2)
-    terminatePoint= True
+# PID control prameter
+Kp = 0.3
+Kd = 0.001
+ki = 0
+time_prev = 0.0
+error_prev = 0.0
+#dt_sleep = 0.01
+#tolerance = 0.01
+error_prev = 0 # in static?
+time_prev = 0
+dt = 0.0        
+           
+def PID_control(error):
+    global time_prev
+    global error_prev
+    """
+    global Integral
+     """
+    global ki
+    global Kd
     
-    # define import package 
-    # if you import this codes, activate this code
-    
-    
-    #Motor Control Main_method
-    while(terminatePoint):
-        #Motor Control Main_method
-        operation_array_left,operation_array_left_right = isvaildPostion(error,operation_array_left)
-        length = len(operation_array_left)
-            
-        #prameter setting
-        LeftMotor_front = operation_array_left[length-2:length-1,0:1][0][0]
-        LeftMotor_rear = operation_array_left[length-1:length,0:1][0][0]
-        RightMotor_front = operation_array_left_right[length-2:length-1,0:1][0][0]
-        RightMotor_rear = operation_array_left_right[length-1:length,0:1][0][0]
-        DutyCycle1 = operation_array_left[0:1,2:3][0][0]
-        DutyCycle2 = operation_array_left[1:2,2:3][0][0]
-        Movement1 = operation_array_left[0:1,1:2][0][0]
-        Movement2 = operation_array_left[1:2,1:2][0][0]
-         
-        setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement)
-        sleep(0.003)
-        setMotor(RightMotor_front,pwm2,DutyCycle2,Movement)
-        sleep(0.01)
-        
-        print(Movement1)
-        print(LeftMotor_front,DutyCycle1,Movement1)
-        setMotor(LeftMotor_front,pwm1,DutyCycle1,Movement1)
-        setMotor(LeftMotor_rear,pwm2,DutyCycle2,Movement2)
-        setMotor(RightMotor_front,pwm3,DutyCycle1,Movement1)
-        setMotor(RightMotor_rear,pwm4,DutyCycle2,Movement2)
-        sleep(2)
-        
-        """
-        #STOP
-        print("Stop init")
-        setMotor(MOTOR1,pwm1,80,Stop)
-        setMotor(MOTOR2,pwm2,80,Stop)
-        sleep(2)    
-        terminatePoint = False      
-        """
-        #END
-        GPIO.cleanup()
-        sys.exit()
+    if(time_prev == 0.):
+        time_prev = time.time()
+    time_current = time.time()
+    print("error",error)
+    Pout = (Kp*error)
+    print("Pout",Pout)
+    dt = time_current-time_prev
+    print("dt",dt)
+    de = error - error_prev
+    Derivative = de/dt
+    Dout = ((Kd/1000 )* Derivative)
+    """
+    Integral += (error * delta_time)
+    if Integral>10:
+        Integral=10
+    if Integral<-10:
+        Integral=-10
+    Iout=((Ki/10) * Integral)
+    """
+    time_prev = time_current
+    error_prev = error
+    radius = Pout +Dout #+Iout
+    print("radius",radius)
+    return radius
