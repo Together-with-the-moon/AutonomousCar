@@ -5,7 +5,7 @@ from stopsign_detection.stopsign import detect_stopSign
 WIDTH = 400
 HEIGHT = 240
 
-pts1 = np.array([[50,135],[350,135],[0,185],[400,185]],np.int32)
+pts1 = np.array([[50,135],[340,135],[0,185],[400,185]],np.int32)
 pts2 = np.array([[100,0],[280,0],[100,240],[280,240]],np.int32)
 
 def Perspective(image, pts1): #원근법 변환
@@ -96,7 +96,7 @@ def LaneFinder(imgFinal, histogramLane):
     LeftLanePos = np.argmax(histogramLane[:150])
 
     # find the position of left edge of right lane
-    RightLanePos = 250 + np.argmax(histogramLane[250:])
+    RightLanePos = 250 + np.argmax(histogramLane[250:]) + 15
 
     cv2.line(imgFinal, (LeftLanePos, 0), (LeftLanePos, HEIGHT), color=(0,255,0), thickness=2)
     cv2.line(imgFinal, (RightLanePos, 0), (RightLanePos, HEIGHT), color=(0,255,0), thickness=2)
@@ -113,3 +113,26 @@ def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
     
     Result = laneCenter - frameCenter
     return Result
+
+def detect_stopSign(image):
+    stopSignCascade = cv2.CascadeClassifier('stopsign_detection/stopsign_classifier.xml')
+    print(stopSignCascade.load('stopsign_classifier.xml'))
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    dist_Stop = -100
+
+    try:
+        stopSigns = stopSignCascade.detectMultiScale(gray, 1.3, 5)
+
+        for (x,y,w,h) in stopSigns:
+            cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,255),2)
+            cv2.putText(image, "Stop Sign", (x,y), 0, 1, color=(0,0,255), thickness=2)
+            roi_gray = gray[y:y+h, x:x+w]
+            roi_color = image[y:y+h, x:x+w]
+            dist_Stop = (-1.07)*w + 102.597
+            cv2.putText(image, f"dist_Stop = {dist_Stop}cm", (1,50), 0, 1, color=(0,0,255), thickness=2)
+
+    except:
+        print(" 34DS")
+
+    print(dist_Stop)
+    return  image, dist_Stop

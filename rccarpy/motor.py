@@ -104,34 +104,34 @@ def setInterruptConfig():
 """
 
 def dutyCycle_adjust(radius):
-    global DutyCycle1
-    global DutyCycle2
+    DutyCycle1 = 0
+    DutyCycle2 = 0
     if -3.6<= radius and radius <=3.6 :
         DutyCycle1 = 41
         DutyCycle2 = 35
         
     elif 3.6<radius and radius<=  4.6:
         DutyCycle1 = 41
-        DutyCycle2 = 20
+        DutyCycle2 = 30
         
     elif 4.6<radius and radius<=  6.5:
         DutyCycle1 = 41
-        DutyCycle2 = 15
+        DutyCycle2 = 25
         
     elif 6.5< radius:
         DutyCycle1 = 41
-        DutyCycle2 = 10  
+        DutyCycle2 = 20
         
     elif -3.6>radius and radius >=-4.6 :
-        DutyCycle1 = 20
+        DutyCycle1 = 30
         DutyCycle2 = 41
         
     elif -6.5<radius and radius >= -4.6:
-        DutyCycle1 = 15
+        DutyCycle1 = 25
         DutyCycle2 = 41
         
     elif radius <= -6.5:
-        DutyCycle1 = 10
+        DutyCycle1 = 20
         DutyCycle2 = 41
     return DutyCycle1,DutyCycle2
 
@@ -208,13 +208,13 @@ def isvaildPostion(error,operation_array):
    elif (error >15  and error <= 30):
        Movement = Right
        DutyCycle1 = 41
-       DutyCycle2 = 20
+       DutyCycle2 = 25
    
    # Define of RC Car Right opreation (large moving) 
    elif (error >30):
         Movement = Right
         DutyCycle1 = 41 
-        DutyCycle2 = 15
+        DutyCycle2 = 20
    
    # Define of RC Car Left opreation (mirco moving) 
    elif (error < -5 and error > -15):
@@ -225,13 +225,13 @@ def isvaildPostion(error,operation_array):
    # Define of RC Car Left opreation (normal moving)      
    elif (error >15  and error <= 30):
         Movement = Left
-        DutyCycle1 = 20
+        DutyCycle1 = 25
         DutyCycle2 = 41
    
    # Define of RC Car Left opreation (Large moving)  
    elif (error <-30):
         Movement = Left
-        DutyCycle1 = 15
+        DutyCycle1 = 20
         DutyCycle2 = 41
         
         
