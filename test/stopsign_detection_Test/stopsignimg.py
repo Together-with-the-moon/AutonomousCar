@@ -16,10 +16,13 @@ import glob
 
 def detect_stopSign(image):
     stopSignCascade = cv2.CascadeClassifier('stopsign_classifier.xml')
+    print(stopSignCascade.load('stopsign_classifier.xml'))
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    dist_Stop = -100
 
     try:
       stopSigns = stopSignCascade.detectMultiScale(gray, 1.3, 5)
+      print(stopSigns)
 
       for (x,y,w,h) in stopSigns:
         cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,255),2)

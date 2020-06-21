@@ -36,11 +36,11 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         setMotor(RightMotor_front,pwm2,100,dist_Stop)
         sleep(0.01)
 
-    if laneEnd > 10000:
+    if laneEnd > 12000:
         print("Lane End")
         sleep(1.5)
-        setMotor(LeftMotor,pwm1,100,Stop) #left motor operation
-        setMotor(RightMotor,pwm2,100,Stop) #right motor opreation
+        setMotor(MOTOR1,pwm1,100,Stop) #left motor operation
+        setMotor(MOTOR2,pwm2,100,Stop) #right motor opreation
         sleep(1)
         setMotor(LeftMotor,pwm1,DutyCycle1,Movement1) #left motor operation
         setMotor(RightMotor,pwm2,DutyCycle2,Movement2) #right motor opreation
@@ -55,7 +55,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     sleep(0.6):
     """
     
-    ResList = [laneEnd>10000, Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
+    ResList = [laneEnd>12000, Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
     DirList = ["Lane End", "Forward", "Right1", "Right2", "Right3", "Left1", "Left2", "Left3"]
     
     for Res, Dir in zip(ResList, DirList):

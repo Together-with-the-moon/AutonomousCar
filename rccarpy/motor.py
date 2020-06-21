@@ -107,12 +107,12 @@ def dutyCycle_adjust(radius):
     DutyCycle1 = 0
     DutyCycle2 = 0
     if -3.6<= radius and radius <=3.6 :
-        DutyCycle1 = 41
-        DutyCycle2 = 35
+        DutyCycle1 = 40
+        DutyCycle2 = 40
         
     elif 3.6<radius and radius<=  4.6:
         DutyCycle1 = 41
-        DutyCycle2 = 30
+        DutyCycle2 = 32
         
     elif 4.6<radius and radius<=  6.5:
         DutyCycle1 = 41
@@ -120,7 +120,7 @@ def dutyCycle_adjust(radius):
         
     elif 6.5< radius:
         DutyCycle1 = 41
-        DutyCycle2 = 20
+        DutyCycle2 = 18
         
     elif -3.6>radius and radius >=-4.6 :
         DutyCycle1 = 30
@@ -128,11 +128,11 @@ def dutyCycle_adjust(radius):
         
     elif -6.5<radius and radius >= -4.6:
         DutyCycle1 = 25
-        DutyCycle2 = 41
+        DutyCycle2 = 81
         
     elif radius <= -6.5:
         DutyCycle1 = 20
-        DutyCycle2 = 41
+        DutyCycle2 = 46
     return DutyCycle1,DutyCycle2
 
 #=======================================================================
