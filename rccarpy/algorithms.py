@@ -1,6 +1,10 @@
+"""
+Algorithms for preprocessing images and detecting lanes
+"""
+
 import cv2
 import numpy as np
-from stopsign_detection.stopsign import detect_stopSign
+# from stopsign_detection.stopsign import detect_stopSign
 
 WIDTH = 400
 HEIGHT = 240
@@ -10,7 +14,14 @@ pts2 = np.array([[100,0],[280,0],[100,240],[280,240]],np.int32)
 
 def Perspective(image, pts1): #원근법 변환
     """
-    Capture a Region of Interest
+    Capture a Region of Interest and apply the perspective translation
+
+    param:
+        image: a frame(numpy array)
+        pts1: a source point(numpy array)
+
+    return:
+        imgPers: a new frame from the vertical perspective(numpy array)
     """
     cv2.line(image,pt1=tuple(pts1[0]),pt2=tuple(pts1[1]),color=(255,0,0),thickness=2)
     cv2.line(image,pt1=tuple(pts1[1]),pt2=tuple(pts1[3]),color=(255,0,0),thickness=2)
@@ -27,16 +38,27 @@ def Perspective(image, pts1): #원근법 변환
     return imgPers
 
 def Threshold(imgPers):
-    imgGray = cv2.cvtColor(imgPers, cv2.COLOR_RGB2GRAY)
+    """
+    Detect the lanes on each side
+
+    param:
+        imgPers: a new frame from the vertical perspective(numpy array)
+
+    return:
+        imgFinal: a new frame combined with binary thresholded image and canny edge detected image(numpy array)
+        imgFinalDuplicate, imgFinalDuplicate1: duplicate image of imgFinal(numpy array)
+    """
+
+    imgGray = cv2.cvtColor(imgPers, cv2.COLOR_RGB2GRAY) # turn the image to gray
     
     # Blurring -----------------------------------------------
     # imgBlur = cv2.blur(imgPers, (5,5))
-    imgBlur = cv2.GaussianBlur(imgGray, (5,5), 0)
+    imgBlur = cv2.GaussianBlur(imgGray, (5,5), 0) # apply blurring to remove noises
     # imgBlur = cv2.medianBlur(imgPers, 5)
     # imgBlur = cv2.bilateralFilter(imgPers,9,75,75)
     # -----------------------------------------------
     
-    imgThresh = cv2.inRange(imgBlur, 220, 255, cv2.THRESH_BINARY)
+    imgThresh = cv2.inRange(imgBlur, 220, 255, cv2.THRESH_BINARY) # turn the image into binary(black or white)
     cv2.imshow("Binary Threshold", imgThresh)
     cv2.waitKey(1)
     # Erosion / Dilation-------------------------------------------------------
@@ -53,7 +75,7 @@ def Threshold(imgPers):
     # cv2.waitKey(1)
     
     # Canny edge detection : still need tuning
-    imgEdge = cv2.Canny(imgGray, 350, 450)
+    imgEdge = cv2.Canny(imgGray, 350, 450) # capture the edges
     
     cv2.imshow("canny edge", imgEdge)
     cv2.waitKey(1)
@@ -66,6 +88,17 @@ def Threshold(imgPers):
     return imgFinal, imgFinalDuplicate, imgFinalDuplicate1
 
 def Histogram(imgFinalDuplicate, imgFinalDuplicate1):
+    """
+    Capture white areas in a frame to detect lanes
+
+    param:
+        imgFinal: a new frame combined with binary thresholded image and canny edge detected image(numpy array)
+        imgFinalDuplicate, imgFinalDuplicate1: duplicate image of imgFinal(numpy array)
+
+    return:
+        histogramLane: numpy array to capture white areas in a frame(numpy array)
+        laneEnd: float value to detect a horizontal lane in front of the car(numpy array)
+    """
     histogramLane = np.uint8([])
     histogramLaneEnd = np.uint8([])
     
@@ -92,6 +125,17 @@ def Histogram(imgFinalDuplicate, imgFinalDuplicate1):
     return histogramLane, laneEnd
 
 def LaneFinder(imgFinal, histogramLane):
+    """
+    find the position of lelf and right lanes
+
+    param:
+        imgFinal: a new frame combined with binary thresholded image and canny edge detected image(numpy array)
+        histogramLane: numpy array to capture white areas in a frame(numpy array)
+
+    return:
+        LeftLanePos: position of the left lane(float)
+        RightLanePos: position of the right lane(float)
+    """
     # find the position of left edge of left lane
     LeftLanePos = np.argmax(histogramLane[:150])
 
@@ -103,6 +147,17 @@ def LaneFinder(imgFinal, histogramLane):
     return LeftLanePos, RightLanePos
 
 def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
+    """
+    find the difference of the vertical center line of the frame and the center of the lanes on each side
+
+    param:
+        imgFinal: a new frame combined with binary thresholded image and canny edge detected image(numpy array)
+        LeftLanePos: position of the left lane(float)
+        RightLanePos: position of the right lane(float)
+
+    return:
+        Result: the difference of the vertical center line of the frame and the center of the lanes on each side(float)
+    """
     laneCenter = ((RightLanePos - LeftLanePos) / 2 + LeftLanePos).astype(np.uint8)
     frameCenter = WIDTH // 2
 
@@ -115,7 +170,18 @@ def LaneCenter(imgFinal, LeftLanePos, RightLanePos):
     return Result
 
 def detect_stopSign(image):
-    stopSignCascade = cv2.CascadeClassifier('stopsign_detection/stopsign_classifier.xml')
+    """
+    find the distance between the car and a stop sign
+
+    param:
+        image: a frame(numpy array)
+
+    return:
+        image: a depicted frame(numpy array)
+        dist_Stop: the distance between the car and a stop sign(float)
+    """
+    # stopSignCascade = cv2.CascadeClassifier('stopsign_detection/stopsign_classifier.xml')
+    stopSignCascade = cv2.CascadeClassifier('stopsign_classifier.xml')
     print(stopSignCascade.load('stopsign_classifier.xml'))
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     dist_Stop = -100
@@ -126,8 +192,8 @@ def detect_stopSign(image):
         for (x,y,w,h) in stopSigns:
             cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,255),2)
             cv2.putText(image, "Stop Sign", (x,y), 0, 1, color=(0,0,255), thickness=2)
-            roi_gray = gray[y:y+h, x:x+w]
-            roi_color = image[y:y+h, x:x+w]
+            # roi_gray = gray[y:y+h, x:x+w]
+            # roi_color = image[y:y+h, x:x+w]
             dist_Stop = (-1.07)*w + 102.597
             cv2.putText(image, f"dist_Stop = {dist_Stop}cm", (1,50), 0, 1, color=(0,0,255), thickness=2)
 

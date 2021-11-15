@@ -1,3 +1,7 @@
+"""
+main file for execution of the autonomous car
+"""
+
 import cv2
 import RPi.GPIO as GPIO
 
@@ -27,6 +31,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     Result = LaneCenter(imgFinal, LeftLanePos, RightLanePos)
     image, dist_Stop = detect_stopSign(image)
 
+    # if the car detects the stop sign and gets close enough to it
     if 5 < dist_Stop < 20:
         print("Stop Sign")
         dist_Stop = 0
@@ -36,6 +41,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         setMotor(RightMotor_front,pwm2,100,dist_Stop)
         sleep(0.01)
 
+    # if the car detects the horizontal white line, it stops temporarily
     if laneEnd > 12000:
         print("Lane End")
         sleep(1.5)
@@ -55,6 +61,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     sleep(0.6):
     """
     
+    """
+    if the car detects the horizontal white line,
+    elif result is zero, it goes straight
+    elif result is a positive number, it goes right
+    elif result is a negative number, it goes left
+    """
     ResList = [laneEnd>12000, Result==0, 0<Result<10, 10<=Result<20, 20<=Result, -10<Result<0, -20<Result<=-10, Result<=-20]
     DirList = ["Lane End", "Forward", "Right1", "Right2", "Right3", "Left1", "Left2", "Left3"]
     
